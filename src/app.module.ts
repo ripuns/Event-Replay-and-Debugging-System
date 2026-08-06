@@ -1,6 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { HealthModule } from './modules/health/health.module';
+import appConfig from './config/app.config';
+import databaseConfig from './config/database.config';
+import redisConfig from './config/redis.config';
+import authConfig from './config/auth.config';
 
 // func to validate all the env vars so that system can show all errors at once
 function validateEnv(config: Record<string, string>){
@@ -19,6 +23,7 @@ function validateEnv(config: Record<string, string>){
       isGlobal: true, // can inject ConfigService anywhere without importing
       envFilePath: '.env',
       validate: validateEnv,
+      load: [appConfig, databaseConfig, redisConfig, authConfig],
     }),
     HealthModule,
   ],
