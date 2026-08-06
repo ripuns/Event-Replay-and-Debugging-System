@@ -126,7 +126,25 @@ Using Docker Compose:
 docker compose up -d
 ```
 
-Verify that PostgreSQL and Redis are running before starting the application.
+Verify that PostgreSQL and Redis are running before starting the application:
+
+```bash
+docker compose ps
+```
+
+If the services are already running, stop them with:
+
+```bash
+docker compose down
+```
+
+Reset local database and cache volumes:
+
+```bash
+docker compose down -v
+```
+
+If Docker is unavailable, ensure Docker Desktop or your Docker daemon is running before retrying.
 
 ---
 

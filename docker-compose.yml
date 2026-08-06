@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -10,7 +8,7 @@ services:
       POSTGRES_PASSWORD: replaydb
       POSTGRES_DB: replaydb
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:6378:6378"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
