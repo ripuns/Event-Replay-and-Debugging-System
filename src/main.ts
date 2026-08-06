@@ -6,8 +6,9 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // check all reqs before your route handler does
   app.useGlobalPipes(
-    // check all reqs before your route handler does
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
@@ -15,9 +16,18 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new AllExceptionsFilter());
+
   app.enableShutdownHooks();
-  const configService = app.get(ConfigService);
+  const shutdownSignals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM'];
+  shutdownSignals.forEach(signal => {
+    process.on(signal, async () => {
+      await app.close();
+      process.exit(0);
+    });
+  });
+
   app.setGlobalPrefix('/v1');
+  const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT', 3000);
   await app.listen(port);
 }
