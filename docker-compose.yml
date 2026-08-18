@@ -34,6 +34,19 @@ services:
       retries: 5
       start_period: 10s
 
+  flyway:
+    image: flyway/flyway:latest
+    command: -connectRetries=60 migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./database/migrations:/flyway/sql
+    environment:
+      FLYWAY_URL: jdbc:postgresql://postgres:6378/replaydb
+      FLYWAY_USER: postgres
+      FLYWAY_PASSWORD: postgres
+
 volumes:
   postgres_data:
   redis_data:
