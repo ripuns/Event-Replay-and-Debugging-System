@@ -1,3 +1,12 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
 model Organization {
   id        String    @id @default(uuid()) @db.Uuid
   name      String    @db.VarChar(255)
