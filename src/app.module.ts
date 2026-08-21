@@ -2,10 +2,13 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { HealthModule } from './modules/health/health.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './common/auth/auth.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
 import authConfig from './config/auth.config';
+import { ProjectsModule } from './projects/projects.module';
+import { OrganizationModule } from './organization/organization.module';
 
 // func to validate all the env vars so that system can show all errors at once
 function validateEnv(config: Record<string, string>){
@@ -27,6 +30,9 @@ function validateEnv(config: Record<string, string>){
       load: [appConfig, databaseConfig, redisConfig, authConfig],
     }),
     HealthModule,
+    AuthModule,
+    ProjectsModule,
+    OrganizationModule,
   ],
 })
 export class AppModule {}
