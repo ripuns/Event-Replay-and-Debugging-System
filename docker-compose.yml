@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: replaydb
       POSTGRES_DB: replaydb
     ports:
-      - "127.0.0.1:6378:6378"
+      - "127.0.0.1:5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

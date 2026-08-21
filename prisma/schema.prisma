@@ -1,13 +1,60 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+model Organization {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String    @db.VarChar(255)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
+  projects Project[]
 
-generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  @@map("organizations")
 }
 
-datasource db {
-  provider = "postgresql"
+model Project {
+  id             String        @id @default(uuid()) @db.Uuid
+  organizationId String        @map("organization_id") @db.Uuid
+  name           String        @db.VarChar(255)
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  aggregates   Aggregate[]
+  events       Event[]
+
+  @@unique([id, organizationId])
+  @@index([organizationId])
+  @@map("projects")
+}
+
+model Aggregate {
+  id            String   @id @default(uuid()) @db.Uuid
+  projectId     String   @map("project_id") @db.Uuid
+  aggregateType String   @map("aggregate_type") @db.VarChar(100)
+  aggregateKey  String   @map("aggregate_key") @db.VarChar(255)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  project Project @relation(fields: [projectId], references: [id])
+  events  Event[]
+
+  @@unique([projectId, aggregateType, aggregateKey])
+  @@unique([id, projectId])
+  @@index([projectId])
+  @@map("aggregates")
+}
+
+model Event {
+  id             String   @id @default(uuid()) @db.Uuid
+  projectId      String   @map("project_id") @db.Uuid
+  aggregateId    String   @map("aggregate_id") @db.Uuid
+  sequenceNumber BigInt   @map("sequence_number")
+  eventType      String   @map("event_type") @db.VarChar(255)
+  eventVersion   Int      @map("event_version")
+  payload        Json
+  metadata       Json?
+  occurredAt     DateTime @map("occurred_at") @db.Timestamptz(6)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  project   Project   @relation(fields: [projectId], references: [id])
+  aggregate Aggregate @relation(fields: [aggregateId, projectId], references: [id, projectId])
+
+  @@unique([aggregateId, sequenceNumber])
+  @@index([projectId])
+  @@map("events")
 }
