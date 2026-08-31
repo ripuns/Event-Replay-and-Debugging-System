@@ -12,7 +12,14 @@ export interface ProjectContext {
   projectId: string;
 }
 
+export interface ApiKeyAuthContext {
+  projectId: string;
+  organizationId: string;
+  apiKeyId: string;
+}
+
 export interface RequestContext extends Request {
   user: AuthenticatedUser;
   projectContext: ProjectContext;
+  auth?: ApiKeyAuthContext;
 }
