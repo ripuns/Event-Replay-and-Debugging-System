@@ -26,6 +26,8 @@ model Project {
   organization Organization @relation(fields: [organizationId], references: [id])
   aggregates   Aggregate[]
   events       Event[]
+  apiKeys      ApiKey[]
+  replayJobs   ReplayJob[]
 
   @@unique([id, organizationId])
   @@index([organizationId])
@@ -39,8 +41,10 @@ model Aggregate {
   aggregateKey  String   @map("aggregate_key") @db.VarChar(255)
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  project Project @relation(fields: [projectId], references: [id])
-  events  Event[]
+  project    Project @relation(fields: [projectId], references: [id])
+  events     Event[]
+  snapshots  Snapshot[]
+  replayJobs ReplayJob[]
 
   @@unique([projectId, aggregateType, aggregateKey])
   @@unique([id, projectId])
@@ -66,4 +70,49 @@ model Event {
   @@unique([aggregateId, sequenceNumber])
   @@index([projectId])
   @@map("events")
+}
+
+model ApiKey {
+  id            String       @id @default(uuid()) @db.Uuid
+  projectId     String       @map("project_id") @db.Uuid
+  name          String       @db.VarChar(255)
+  keyHash       String       @unique @map("key_hash") @db.VarChar(255)
+  keyPrefix     String       @map("key_prefix") @db.VarChar(255)
+  expiresAt     DateTime?    @map("expires_at") @db.Timestamptz(6)
+  revokedAt     DateTime?    @map("revoked_at") @db.Timestamptz(6)
+  createdAt     DateTime     @default(now())  @map("created_at")  @db.Timestamptz(6)
+
+  project Project @relation(fields: [projectId], references: [id])
+  @@index([projectId], map: "idx_api_keys_project_id")
+  @@map("api_keys")
+}
+
+model Snapshot {
+  id              String       @id @default(uuid()) @db.Uuid
+  aggregateId     String       @map("aggregate_id") @db.Uuid
+  projectId       String       @map("project_id") @db.Uuid
+  sequenceNumber  BigInt       @map("sequence_number")  @db.BigInt
+  state           Json         @map("state")
+  createdAt       DateTime     @default(now())  @map("created_at")  @db.Timestamptz(6)
+
+  aggregate Aggregate @relation(fields: [aggregateId, projectId], references: [id, projectId])
+  @@unique([aggregateId, sequenceNumber])
+  @@index ([aggregateId], map:"idx_snapshots_aggregate_id")
+  @@map("snapshots")
+}
+
+model ReplayJob {
+  id             String       @id @default(uuid()) @db.Uuid
+  projectId      String       @map("project_id") @db.Uuid
+  aggregateId    String?      @map("aggregate_id") @db.Uuid
+  status         String       @map("status") @default("pending") @db.VarChar(50)
+  startedAt      DateTime?    @map("started_at") @db.Timestamptz(6)
+  completedAt    DateTime?    @map("completed_at") @db.Timestamptz(6)
+  error          String?      @map("error") @db.VarChar(255)
+  createdAt      DateTime     @default(now())  @map("created_at")  @db.Timestamptz(6)
+
+  project Project @relation(fields: [projectId], references: [id])
+  aggregate Aggregate? @relation(fields: [aggregateId, projectId], references: [id, projectId])
+  @@index ([projectId], map:"idx_replay_jobs_project_id")
+  @@map("replay_jobs")
 }
