@@ -4,48 +4,27 @@ import {
     ForbiddenException,
     Injectable,
 } from '@nestjs/common';
-import { Request } from 'express';
-import { RequestContext, ProjectContext,AuthenticatedUser } from './request-context';
-import { ProjectsService } from '../../projects/projects.service';
+import { RequestContext } from './request-context';
 
 @Injectable()
 export class ProjectAccessGuard implements CanActivate {
-    constructor(
-        private readonly projectsService: ProjectsService,
-    ) { }
+    canActivate(context: ExecutionContext): boolean {
+        const request = context.switchToHttp().getRequest<RequestContext>();
 
-    async canActivate(context: ExecutionContext): Promise<boolean> {
-        const request = context
-            .switchToHttp()
-            .getRequest<RequestContext>();
-
-        const projectId = request.params.projectId;
-        const user = request.user;
+        const projectId = request.params.id;
+        const auth = request.auth;
 
         if (!projectId || Array.isArray(projectId)) {
             throw new ForbiddenException('Project ID is required');
         }
 
-        const project = await this.projectsService.requireProject(
-            projectId,
-            request.user.organizationId,
-        );
-
-        if (!user) {
-            throw new ForbiddenException('User not authenticated');
+        if (!auth) {
+            throw new ForbiddenException('Not authenticated');
         }
 
-        if (!project) {
-            throw new ForbiddenException(
-                'Project does not belong to your organization',
-            );
+        if (auth.projectId !== projectId) {
+            throw new ForbiddenException('API key does not grant access to this project');
         }
-
-        request.projectContext = {
-            userId: user.userId,
-            organizationId: user.organizationId,
-            projectId: project.id,
-        };
 
         return true;
     }
