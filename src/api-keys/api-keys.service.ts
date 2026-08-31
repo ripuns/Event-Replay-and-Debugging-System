@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { randomBytes, createHash } from 'crypto';
 import { ApiKeyRepository } from './api-keys.repository';
+import type { Prisma } from '../generated/prisma/client';
+import type { PrismaService } from '../prisma/prisma.service';
 
 const KEY_PREFIX = 'rk_';
 
@@ -20,7 +22,11 @@ export interface VerifiedApiKey {
 export class ApiKeyService {
   constructor(private readonly apiKeyRepository: ApiKeyRepository) {}
 
-  async create(projectId: string, name: string): Promise<CreatedApiKey> {
+  async create(
+    projectId: string,
+    name: string,
+    client?: PrismaService | Prisma.TransactionClient,
+  ): Promise<CreatedApiKey> {
     const secret = randomBytes(32).toString('base64url');
     const rawKey = `${KEY_PREFIX}${secret}`;
     const keyPrefix = rawKey.slice(0, 12);
@@ -31,6 +37,7 @@ export class ApiKeyService {
       name,
       keyHash,
       keyPrefix,
+      client,
     );
 
     return { id: apiKey.id, prefix: keyPrefix, rawKey };
