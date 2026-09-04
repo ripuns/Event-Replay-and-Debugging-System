@@ -6,8 +6,8 @@ Application root. Bootstraps the NestJS process and wires the top-level module t
 
 | File | Purpose | Why |
 |---|---|---|
-| `main.ts` | Application entrypoint: creates the Nest app, applies the global `ValidationPipe` (whitelist + transform) and `AllExceptionsFilter`, registers graceful shutdown on `SIGINT`/`SIGTERM`, sets the global route prefix `/v1`, and starts listening on `PORT`. | Centralizes cross-cutting HTTP concerns (validation, error shape, shutdown, versioned prefix) in one place instead of scattering them across modules. |
-| `app.module.ts` | Root Nest module. Loads and validates env config (`DATABASE_URL`, `REDIS_URL`, `JWT_SECRET` required; `PORT` defaulted) via `ConfigModule.forRoot`, and imports `HealthModule`, `AuthModule`, `ProjectsModule`, `OrganizationModule`. | Fails fast at boot if required env vars are missing, and is the single place that declares which feature modules exist in the app. |
+| `main.ts` | Application entrypoint: creates the Nest app, applies the global `ValidationPipe` (whitelist + transform) and `AllExceptionsFilter`, registers graceful shutdown on `SIGINT`/`SIGTERM`, sets the global route prefix `/v1`, mounts Swagger (`@nestjs/swagger`) at `v1/docs` with a bearer (`api-key`) auth scheme, and starts listening on `PORT`. | Centralizes cross-cutting HTTP concerns (validation, error shape, shutdown, versioned prefix, API docs) in one place instead of scattering them across modules. Swagger is set up after `setGlobalPrefix` so its documented paths match the real `/v1/...` routes. |
+| `app.module.ts` | Root Nest module. Loads and validates env config (`DATABASE_URL`, `REDIS_URL`, `JWT_SECRET` required; `PORT` defaulted) via `ConfigModule.forRoot`, and imports `HealthModule`, `AuthModule`, `ProjectsModule`, `OrganizationModule`. | Fails fast at boot if required env vars are missing, and is the single place that declares which feature modules exist in the app. Does not import `PrismaModule` directly — it's `@Global()` (see `prisma/README.md`), so every feature module that needs it imports it itself. |
 
 ## Subfolders
 
