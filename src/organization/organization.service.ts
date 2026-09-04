@@ -7,7 +7,12 @@ import type { Prisma } from '../generated/prisma/client';
 
 export interface OrganizationWithFirstProject {
   organization: { id: string; name: string; createdAt: Date };
-  project?: { id: string; organizationId: string; name: string; createdAt: Date };
+  project?: {
+    id: string;
+    organizationId: string;
+    name: string;
+    createdAt: Date;
+  };
   apiKey?: CreatedApiKey;
 }
 

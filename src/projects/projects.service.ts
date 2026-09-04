@@ -5,7 +5,12 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { Prisma } from '../generated/prisma/client';
 
 export interface ProjectWithFirstKey {
-  project: { id: string; organizationId: string; name: string; createdAt: Date };
+  project: {
+    id: string;
+    organizationId: string;
+    name: string;
+    createdAt: Date;
+  };
   apiKey: CreatedApiKey;
 }
 

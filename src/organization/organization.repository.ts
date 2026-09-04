@@ -6,7 +6,10 @@ import type { Prisma } from '../generated/prisma/client';
 export class OrganizationRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(name: string, client: PrismaService | Prisma.TransactionClient = this.prisma) {
+  create(
+    name: string,
+    client: PrismaService | Prisma.TransactionClient = this.prisma,
+  ) {
     return client.organization.create({
       data: { name },
     });

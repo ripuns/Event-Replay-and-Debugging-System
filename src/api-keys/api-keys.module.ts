@@ -5,10 +5,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule],
-  providers: [
-    ApiKeyService,
-    ApiKeyRepository,
-  ],
+  providers: [ApiKeyService, ApiKeyRepository],
   exports: [ApiKeyService],
 })
 export class ApiKeyModule {}
