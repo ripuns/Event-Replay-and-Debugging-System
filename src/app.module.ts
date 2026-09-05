@@ -8,6 +8,7 @@ import redisConfig from './config/redis.config';
 import authConfig from './config/auth.config';
 import { ProjectsModule } from './projects/projects.module';
 import { OrganizationModule } from './organization/organization.module';
+import { EventsModule } from './events/events.module';
 
 // func to validate all the env vars so that system can show all errors at once
 function validateEnv(config: Record<string, string>) {
@@ -33,6 +34,7 @@ function validateEnv(config: Record<string, string>) {
     AuthModule,
     ProjectsModule,
     OrganizationModule,
+    EventsModule,
   ],
 })
 export class AppModule {}
