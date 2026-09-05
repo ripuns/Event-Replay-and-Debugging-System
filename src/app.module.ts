@@ -9,6 +9,8 @@ import authConfig from './config/auth.config';
 import { ProjectsModule } from './projects/projects.module';
 import { OrganizationModule } from './organization/organization.module';
 import { EventsModule } from './events/events.module';
+import { EventReducersModule } from './event-reducers/event-reducers.module';
+import { AggregatesModule } from './aggregates/aggregates.module';
 
 // func to validate all the env vars so that system can show all errors at once
 function validateEnv(config: Record<string, string>) {
@@ -35,6 +37,8 @@ function validateEnv(config: Record<string, string>) {
     ProjectsModule,
     OrganizationModule,
     EventsModule,
+    EventReducersModule,
+    AggregatesModule,
   ],
 })
 export class AppModule {}
