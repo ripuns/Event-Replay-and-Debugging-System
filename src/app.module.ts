@@ -11,6 +11,8 @@ import { OrganizationModule } from './organization/organization.module';
 import { EventsModule } from './events/events.module';
 import { EventReducersModule } from './event-reducers/event-reducers.module';
 import { AggregatesModule } from './aggregates/aggregates.module';
+import { SnapshotsModule } from './snapshots/snapshots.module';
+import { ReplayJobsModule } from './replay-jobs/replay-jobs.module';
 
 // func to validate all the env vars so that system can show all errors at once
 function validateEnv(config: Record<string, string>) {
@@ -39,6 +41,8 @@ function validateEnv(config: Record<string, string>) {
     EventsModule,
     EventReducersModule,
     AggregatesModule,
+    SnapshotsModule,
+    ReplayJobsModule,
   ],
 })
 export class AppModule {}
