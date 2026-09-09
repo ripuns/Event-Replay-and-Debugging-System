@@ -17,13 +17,18 @@ export interface ReducerRule {
  * payload contributes nothing to state) rather than raising an error -
  * this keeps reconstruction total (never crashes on an unmapped event type)
  * while staying fully declarative and server-side.
+ *
+ * `initialState` lets a caller resume folding from a snapshot instead of
+ * always starting from an empty object - the events passed in are then
+ * expected to be only the ones after that snapshot's sequence number.
  */
 export function reduceEvents(
   events: ReducibleEvent[],
   rules: ReducerRule[],
+  initialState: Record<string, unknown> = {},
 ): Record<string, unknown> {
   const rulesByEventType = new Map(rules.map((rule) => [rule.eventType, rule]));
-  let state: Record<string, unknown> = {};
+  let state: Record<string, unknown> = initialState;
 
   for (const event of events) {
     const rule = rulesByEventType.get(event.eventType);
