@@ -11,13 +11,18 @@ export class AggregatesRepository {
     });
   }
 
-  findEventsUpTo(aggregateId: string, asOfSequence?: bigint) {
+  findEventsInRange(
+    aggregateId: string,
+    afterSequence?: bigint,
+    upToSequence?: bigint,
+  ) {
     return this.prisma.event.findMany({
       where: {
         aggregateId,
-        ...(asOfSequence !== undefined
-          ? { sequenceNumber: { lte: asOfSequence } }
-          : {}),
+        sequenceNumber: {
+          ...(afterSequence !== undefined ? { gt: afterSequence } : {}),
+          ...(upToSequence !== undefined ? { lte: upToSequence } : {}),
+        },
       },
       orderBy: { sequenceNumber: 'asc' },
     });

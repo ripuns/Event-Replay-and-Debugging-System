@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { AggregatesRepository } from './aggregates.repository';
 import { EventReducersService } from '../event-reducers/event-reducers.service';
+import { SnapshotsRepository } from '../snapshots/snapshots.repository';
 import { reduceEvents, ReducerRule } from './reduce-events';
 import { EventReducerOperation } from '../event-reducers/dto/create-event-reducer.dto';
 
@@ -17,6 +18,7 @@ export class AggregatesService {
   constructor(
     private readonly aggregatesRepository: AggregatesRepository,
     private readonly eventReducersService: EventReducersService,
+    private readonly snapshotsRepository: SnapshotsRepository,
   ) {}
 
   async getState(
@@ -35,8 +37,19 @@ export class AggregatesService {
     const asOfSequenceBigInt =
       asOfSequence !== undefined ? BigInt(asOfSequence) : undefined;
 
-    const events = await this.aggregatesRepository.findEventsUpTo(
+    // Start from the nearest snapshot at or before the requested point (if
+    // any) rather than replaying every event from the beginning - this is
+    // the actual performance payoff of snapshotting. Correctness never
+    // depends on a snapshot existing: with none, this falls back to
+    // replaying the full event history, same as before Phase 6.
+    const snapshot = await this.snapshotsRepository.findLatestUpTo(
       aggregateId,
+      asOfSequenceBigInt,
+    );
+
+    const events = await this.aggregatesRepository.findEventsInRange(
+      aggregateId,
+      snapshot?.sequenceNumber,
       asOfSequenceBigInt,
     );
 
@@ -58,14 +71,20 @@ export class AggregatesService {
         field: rule.field,
       }));
 
-    const state = reduceEvents(events, rules);
+    const initialState = snapshot
+      ? (snapshot.state as Record<string, unknown>)
+      : {};
+    const state = reduceEvents(events, rules, initialState);
     const lastEvent = events.at(-1);
+    const asOf = lastEvent
+      ? lastEvent.sequenceNumber.toString()
+      : (snapshot?.sequenceNumber.toString() ?? null);
 
     return {
       aggregateId: aggregate.id,
       aggregateType: aggregate.aggregateType,
       aggregateKey: aggregate.aggregateKey,
-      asOfSequence: lastEvent ? lastEvent.sequenceNumber.toString() : null,
+      asOfSequence: asOf,
       state,
     };
   }
