@@ -1,4 +1,4 @@
-import { EventReducerOperation } from 'src/event-reducers/dto/create-event-reducer.dto';
+import { EventReducerOperation } from '../event-reducers/dto/create-event-reducer.dto';
 import { reduceEvents, ReducerRule, ReducibleEvent } from './reduce-events';
 
 describe('reduceEvents', () => {
@@ -7,7 +7,11 @@ describe('reduceEvents', () => {
       { eventType: 'OrderPlaced', payload: { total: 100, status: 'placed' } },
     ];
     const rules: ReducerRule[] = [
-      { eventType: 'OrderPlaced', operation: EventReducerOperation.Set, field: null },
+      {
+        eventType: 'OrderPlaced',
+        operation: EventReducerOperation.Set,
+        field: null,
+      },
     ];
 
     expect(reduceEvents(events, rules)).toEqual({
@@ -23,8 +27,16 @@ describe('reduceEvents', () => {
       { eventType: 'OrderShipped', payload: { trackingId: '1Z999' } },
     ];
     const rules: ReducerRule[] = [
-      { eventType: 'OrderPlaced', operation:  EventReducerOperation.Set, field: null },
-      { eventType: 'OrderShipped', operation:  EventReducerOperation.Merge, field: 'shipping' },
+      {
+        eventType: 'OrderPlaced',
+        operation: EventReducerOperation.Set,
+        field: null,
+      },
+      {
+        eventType: 'OrderShipped',
+        operation: EventReducerOperation.Merge,
+        field: 'shipping',
+      },
     ];
 
     expect(reduceEvents(events, rules)).toEqual({
@@ -39,7 +51,11 @@ describe('reduceEvents', () => {
       { eventType: 'ItemAdded', payload: { sku: 'B2' } },
     ];
     const rules: ReducerRule[] = [
-      { eventType: 'ItemAdded', operation:  EventReducerOperation.Append, field: 'items' },
+      {
+        eventType: 'ItemAdded',
+        operation: EventReducerOperation.Append,
+        field: 'items',
+      },
     ];
 
     expect(reduceEvents(events, rules)).toEqual({
@@ -53,7 +69,11 @@ describe('reduceEvents', () => {
       { eventType: 'UnmappedEvent', payload: { whatever: true } },
     ];
     const rules: ReducerRule[] = [
-      { eventType: 'OrderPlaced', operation: EventReducerOperation.Set, field: null },
+      {
+        eventType: 'OrderPlaced',
+        operation: EventReducerOperation.Set,
+        field: null,
+      },
     ];
 
     expect(reduceEvents(events, rules)).toEqual({ total: 100 });
@@ -65,8 +85,16 @@ describe('reduceEvents', () => {
       { eventType: 'OrderCancelled', payload: { status: 'cancelled' } },
     ];
     const rules: ReducerRule[] = [
-      { eventType: 'OrderPlaced', operation: EventReducerOperation.Set, field: null },
-      { eventType: 'OrderCancelled', operation: EventReducerOperation.Set, field: null },
+      {
+        eventType: 'OrderPlaced',
+        operation: EventReducerOperation.Set,
+        field: null,
+      },
+      {
+        eventType: 'OrderCancelled',
+        operation: EventReducerOperation.Set,
+        field: null,
+      },
     ];
 
     expect(reduceEvents(events, rules)).toEqual({ status: 'cancelled' });
@@ -77,7 +105,11 @@ describe('reduceEvents', () => {
       { eventType: 'ItemAdded', payload: { sku: 'A1' } },
     ];
     const rules: ReducerRule[] = [
-      { eventType: 'ItemAdded', operation: EventReducerOperation.Append, field: null },
+      {
+        eventType: 'ItemAdded',
+        operation: EventReducerOperation.Append,
+        field: null,
+      },
     ];
 
     expect(reduceEvents(events, rules)).toEqual({});
