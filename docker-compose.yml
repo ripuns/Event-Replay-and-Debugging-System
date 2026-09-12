@@ -47,6 +47,23 @@ services:
       FLYWAY_USER: replaydb
       FLYWAY_PASSWORD: replaydb
 
+  jaeger:
+    image: jaegertracing/all-in-one:1.76.0
+    container_name: replaydb_jaeger
+    restart: unless-stopped
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "127.0.0.1:16686:16686"
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:4318:4318"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:16686 > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 volumes:
   postgres_data:
   redis_data:
