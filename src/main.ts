@@ -1,12 +1,19 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { ValidationPipe } from '@nestjs/common';
+import { ConsoleLogger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { CorrelationIdMiddleware } from './observability/logging/correlation-id.middleware';
+import { HttpMetricsInterceptor } from './observability/metrics/http-metrics.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: new ConsoleLogger({ json: true }),
+  });
+
+  const correlationIdMiddleware = new CorrelationIdMiddleware();
+  app.use(correlationIdMiddleware.use.bind(correlationIdMiddleware));
 
   // check all reqs before your route handler does
   app.useGlobalPipes(
@@ -17,6 +24,7 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalInterceptors(app.get(HttpMetricsInterceptor));
 
   app.enableShutdownHooks();
   const shutdownSignals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM'];
