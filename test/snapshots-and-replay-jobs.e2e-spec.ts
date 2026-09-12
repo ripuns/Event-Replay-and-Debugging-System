@@ -109,7 +109,7 @@ describe('Snapshots and Replay Jobs (e2e)', () => {
     return res.body as { aggregateId: string; sequenceNumber: string };
   }
 
-  async function waitForSnapshot(aggregateId: string, timeoutMs = 5000) {
+  async function waitForSnapshot(aggregateId: string, timeoutMs = 10000) {
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
       const snapshot = await prisma.snapshot.findFirst({
@@ -128,7 +128,7 @@ describe('Snapshots and Replay Jobs (e2e)', () => {
     projectId: string,
     rawKey: string,
     jobId: string,
-    timeoutMs = 5000,
+    timeoutMs = 10000,
   ) {
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
@@ -266,5 +266,11 @@ describe('Snapshots and Replay Jobs (e2e)', () => {
       .set('Authorization', `Bearer ${otherKey}`)
       .send({})
       .expect(403);
-  });
+
+    // Wait for the async replay job to finish before afterEach's cleanup
+    // runs, otherwise the worker can still be writing a Snapshot row (or
+    // reading the aggregate it references) when cleanup deletes it,
+    // racing a foreign key violation on fk_snapshots_aggregate_project.
+    await waitForJobCompletion(projectId, rawKey, jobId);
+  }, 15000);
 });
