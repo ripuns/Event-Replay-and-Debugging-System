@@ -7,12 +7,14 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { AggregatesModule } from '../aggregates/aggregates.module';
 import { QueuesModule } from '../queues/queues.module';
 import { SNAPSHOT_CREATION_QUEUE } from '../queues/queue-names';
+import { CacheModule } from '../cache/cache.module';
 
 @Module({
   imports: [
     PrismaModule,
     AggregatesModule,
     QueuesModule,
+    CacheModule,
     BullModule.registerQueue({ name: SNAPSHOT_CREATION_QUEUE }),
   ],
   providers: [SnapshotsService, SnapshotsRepository, SnapshotCreationProcessor],

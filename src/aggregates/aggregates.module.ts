@@ -6,11 +6,12 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { ApiKeyModule } from '../api-keys/api-keys.module';
 import { EventReducersModule } from '../event-reducers/event-reducers.module';
 import { SnapshotsRepository } from '../snapshots/snapshots.repository';
+import { CacheModule } from '../cache/cache.module';
 import { ApiKeyGuard } from '../common/auth/api-key.guard';
 import { ProjectAccessGuard } from '../common/auth/project-access.guard';
 
 @Module({
-  imports: [PrismaModule, ApiKeyModule, EventReducersModule],
+  imports: [PrismaModule, ApiKeyModule, EventReducersModule, CacheModule],
   controllers: [AggregatesController],
   providers: [
     AggregatesService,
