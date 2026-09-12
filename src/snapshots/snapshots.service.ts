@@ -2,6 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SnapshotsRepository } from './snapshots.repository';
 import { AggregatesService } from '../aggregates/aggregates.service';
 import { Prisma } from '../generated/prisma/client';
+import { RedisCacheService } from '../cache/redis-cache.service';
+import {
+  aggregateStateLatestKey,
+  snapshotLookupLatestKey,
+} from '../cache/cache-keys';
 
 const UNIQUE_CONSTRAINT_VIOLATION = 'P2002';
 
@@ -14,6 +19,7 @@ export class SnapshotsService {
   constructor(
     private readonly snapshotsRepository: SnapshotsRepository,
     private readonly aggregatesService: AggregatesService,
+    private readonly cache: RedisCacheService,
   ) {}
 
   /**
@@ -66,12 +72,22 @@ export class SnapshotsService {
     }
 
     try {
-      return await this.snapshotsRepository.create({
+      const snapshot = await this.snapshotsRepository.create({
         aggregateId,
         projectId,
         sequenceNumber,
         state: result.state as Prisma.InputJsonValue,
       });
+
+      // A new snapshot changes what "the latest snapshot" is, so the
+      // snapshot-lookup cache must be invalidated even though the state
+      // cache was typically already invalidated by the triggering append.
+      await this.cache.del(
+        snapshotLookupLatestKey(aggregateId),
+        aggregateStateLatestKey(aggregateId),
+      );
+
+      return snapshot;
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&

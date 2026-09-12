@@ -7,6 +7,11 @@ import { SnapshotsService } from '../snapshots/snapshots.service';
 import { SNAPSHOT_CREATION_QUEUE } from '../queues/queue-names';
 import type { SnapshotCreationJobData } from '../snapshots/snapshot-creation.processor';
 import type { Prisma } from '../generated/prisma/client';
+import { RedisCacheService } from '../cache/redis-cache.service';
+import {
+  aggregateStateLatestKey,
+  snapshotLookupLatestKey,
+} from '../cache/cache-keys';
 
 export interface AppendEventInput {
   aggregateType: string;
@@ -26,6 +31,7 @@ export class EventsService {
     private readonly eventsRepository: EventsRepository,
     private readonly prisma: PrismaService,
     private readonly snapshotsService: SnapshotsService,
+    private readonly cache: RedisCacheService,
     @InjectQueue(SNAPSHOT_CREATION_QUEUE)
     private readonly snapshotQueue: Queue<SnapshotCreationJobData>,
   ) {}
@@ -59,6 +65,11 @@ export class EventsService {
             : new Date(),
         });
       },
+    );
+
+    await this.cache.del(
+      aggregateStateLatestKey(event.aggregateId),
+      snapshotLookupLatestKey(event.aggregateId),
     );
 
     await this.maybeEnqueueSnapshot(projectId, event.aggregateId);
