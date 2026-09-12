@@ -10,6 +10,6 @@ import { RedisCacheService, REDIS_CLIENT } from './redis-cache.service';
     },
     RedisCacheService,
   ],
-  exports: [RedisCacheService],
+  exports: [RedisCacheService, REDIS_CLIENT],
 })
 export class CacheModule {}
