@@ -22,4 +22,5 @@ export interface RequestContext extends Request {
   user: AuthenticatedUser;
   projectContext: ProjectContext;
   auth?: ApiKeyAuthContext;
+  correlationId?: string;
 }
